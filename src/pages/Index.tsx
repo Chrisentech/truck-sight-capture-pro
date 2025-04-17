@@ -1,8 +1,8 @@
 
-import TruckInspectionForm from "@/components/TruckInspectionForm";
+import TruckAssistanceForm from "@/components/TruckAssistanceForm";
 
 const Index = () => {
-  return <TruckInspectionForm />;
+  return <TruckAssistanceForm />;
 };
 
 export default Index;
