@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, MapPin, Truck, AlertTriangle } from 'lucide-react';
+import { Camera, MapPin, Truck, AlertTriangle, User } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
