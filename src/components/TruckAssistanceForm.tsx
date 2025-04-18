@@ -1,6 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
-import { Camera, MapPin, Truck, Phone, Mail, User, AlertTriangle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Camera, MapPin, Truck, AlertTriangle } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ const TruckAssistanceForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
+  const handleGetLocation = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -52,7 +51,7 @@ const TruckAssistanceForm = () => {
         }
       );
     }
-  }, [toast]);
+  };
 
   const handleImageUpload = (view: keyof TruckImages) => (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
@@ -146,14 +145,23 @@ const TruckAssistanceForm = () => {
               <MapPin className="h-5 w-5 text-red-500" />
               Your Location
             </h3>
-            <div className="bg-gray-100 p-4 rounded-lg flex items-center gap-3">
-              <MapPin className="text-red-500" />
-              {location ? (
-                <span>
-                  Location captured: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                </span>
-              ) : (
-                <span className="text-amber-700">Accessing location... Please allow location access to receive help.</span>
+            <div className="space-y-4">
+              <Button 
+                type="button"
+                onClick={handleGetLocation}
+                className="w-full flex items-center justify-center gap-2"
+                variant="outline"
+              >
+                <MapPin className="h-4 w-4" />
+                Get My Location
+              </Button>
+              {location && (
+                <div className="bg-gray-100 p-4 rounded-lg flex items-center gap-3">
+                  <MapPin className="text-red-500" />
+                  <span>
+                    Location captured: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                  </span>
+                </div>
               )}
             </div>
           </div>
