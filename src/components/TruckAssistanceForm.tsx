@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useLocation } from "react-router-dom";
 
 interface Location {
   latitude: number;
@@ -20,19 +21,36 @@ interface TruckImages {
   right?: File;
 }
 
-// New interface for props to accept client info
 interface TruckAssistanceFormProps {
   cli_email?: string;
   cli_name?: string;
   cli_phone?: string;
 }
 
-const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = ({
-  cli_email = '',
-  cli_name = '',
-  cli_phone = ''
-}) => {
-  // If a prop is present, initialize state with it, otherwise empty string
+function getQueryParam(search: string, key: string) {
+  // Simple URL query param parser
+  const params = new URLSearchParams(search);
+  return params.get(key) || '';
+}
+
+const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
+  const locationObj = useLocation();
+  // Query string: locationObj.search
+
+  // Determine values (from props first, or from query string)
+  const cli_email =
+    typeof props.cli_email === "string" && props.cli_email
+      ? props.cli_email
+      : getQueryParam(locationObj.search, "cli_email");
+  const cli_name =
+    typeof props.cli_name === "string" && props.cli_name
+      ? props.cli_name
+      : getQueryParam(locationObj.search, "cli_name");
+  const cli_phone =
+    typeof props.cli_phone === "string" && props.cli_phone
+      ? props.cli_phone
+      : getQueryParam(locationObj.search, "cli_phone");
+
   const [location, setLocation] = useState<Location | null>(null);
   const [images, setImages] = useState<TruckImages>({});
   const [name, setName] = useState(cli_name);
@@ -82,8 +100,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate form submission
     setTimeout(() => {
       toast({
         title: "Help request sent",
@@ -108,7 +124,7 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = ({
             Fill out this form to request assistance for your truck. We'll dispatch help to your location as soon as possible.
           </AlertDescription>
         </Alert>
-        
+
         <form onSubmit={handleSubmit}>
           {/* Personal Information */}
           <div className="space-y-4 mb-8">
@@ -254,3 +270,4 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = ({
 };
 
 export default TruckAssistanceForm;
+
