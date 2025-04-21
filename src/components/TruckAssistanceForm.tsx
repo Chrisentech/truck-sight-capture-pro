@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Camera, MapPin, Truck, AlertTriangle, User } from 'lucide-react';
 import { Card } from "@/components/ui/card";
@@ -19,12 +20,24 @@ interface TruckImages {
   right?: File;
 }
 
-const TruckAssistanceForm = () => {
+// New interface for props to accept client info
+interface TruckAssistanceFormProps {
+  cli_email?: string;
+  cli_name?: string;
+  cli_phone?: string;
+}
+
+const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = ({
+  cli_email = '',
+  cli_name = '',
+  cli_phone = ''
+}) => {
+  // If a prop is present, initialize state with it, otherwise empty string
   const [location, setLocation] = useState<Location | null>(null);
   const [images, setImages] = useState<TruckImages>({});
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState(cli_name);
+  const [email, setEmail] = useState(cli_email);
+  const [phone, setPhone] = useState(cli_phone);
   const [truckIssue, setTruckIssue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -112,6 +125,7 @@ const TruckAssistanceForm = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   required
+                  readOnly={!!cli_name}
                 />
               </div>
               <div>
@@ -123,6 +137,7 @@ const TruckAssistanceForm = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
                   required
+                  readOnly={!!cli_email}
                 />
               </div>
               <div>
@@ -134,6 +149,7 @@ const TruckAssistanceForm = () => {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
                   required
+                  readOnly={!!cli_phone}
                 />
               </div>
             </div>
