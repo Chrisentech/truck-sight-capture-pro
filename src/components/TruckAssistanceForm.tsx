@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Camera, MapPin, Truck, AlertTriangle, User } from 'lucide-react';
 import { Card } from "@/components/ui/card";
@@ -35,9 +34,7 @@ function getQueryParam(search: string, key: string) {
 
 const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
   const locationObj = useLocation();
-  // Query string: locationObj.search
 
-  // Determine values (from props first, or from query string)
   const cli_email =
     typeof props.cli_email === "string" && props.cli_email
       ? props.cli_email
@@ -141,7 +138,7 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   required
-                  readOnly={!!cli_name}
+                  readOnly={false}
                 />
               </div>
               <div>
@@ -165,7 +162,7 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
                   required
-                  readOnly={!!cli_phone}
+                  readOnly={false}
                 />
               </div>
             </div>
@@ -270,4 +267,3 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
 };
 
 export default TruckAssistanceForm;
-
