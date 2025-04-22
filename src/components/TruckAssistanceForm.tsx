@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, MapPin, Truck, AlertTriangle, User } from 'lucide-react';
+import { MapPin, Truck, AlertTriangle, User } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,10 +7,12 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useLocation } from "react-router-dom";
+import { FormattedAddress, getFormattedAddress } from '@/utils/geocoding';
 
 interface Location {
   latitude: number;
   longitude: number;
+  formattedAddress?: FormattedAddress;
 }
 
 interface TruckImages {
@@ -27,7 +29,6 @@ interface TruckAssistanceFormProps {
 }
 
 function getQueryParam(search: string, key: string) {
-  // Simple URL query param parser
   const params = new URLSearchParams(search);
   return params.get(key) || '';
 }
@@ -60,15 +61,27 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
+        async (position) => {
+          const coords = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
-          });
-          toast({
-            title: "Location accessed",
-            description: "Successfully retrieved your location. Help can be sent to your coordinates.",
-          });
+          };
+          
+          try {
+            const formattedAddress = await getFormattedAddress(coords.latitude, coords.longitude);
+            setLocation({ ...coords, formattedAddress });
+            toast({
+              title: "Location accessed",
+              description: "Successfully retrieved your location and address details.",
+            });
+          } catch (error) {
+            setLocation(coords);
+            toast({
+              title: "Address lookup failed",
+              description: "Got your coordinates, but couldn't get detailed address.",
+              variant: "destructive",
+            });
+          }
         },
         (error) => {
           toast({
@@ -123,7 +136,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
         </Alert>
 
         <form onSubmit={handleSubmit}>
-          {/* Personal Information */}
           <div className="space-y-4 mb-8">
             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
               <User className="h-5 w-5 text-blue-500" />
@@ -168,7 +180,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
             </div>
           </div>
 
-          {/* Location Information */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-4">
               <MapPin className="h-5 w-5 text-red-500" />
@@ -185,17 +196,28 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                 Get My Location
               </Button>
               {location && (
-                <div className="bg-gray-100 p-4 rounded-lg flex items-center gap-3">
-                  <MapPin className="text-red-500" />
-                  <span>
-                    Location captured: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                  </span>
+                <div className="bg-gray-100 p-4 rounded-lg space-y-2">
+                  {location.formattedAddress ? (
+                    <>
+                      <p className="font-medium">{location.formattedAddress.address_line_1}</p>
+                      <p>{location.formattedAddress.street}</p>
+                      <p>
+                        {location.formattedAddress.city}, {location.formattedAddress.state} {location.formattedAddress.zipcode}
+                      </p>
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <MapPin className="text-red-500" />
+                      <span>
+                        Location captured: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Truck Issue */}
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-4">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -212,7 +234,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
             />
           </div>
 
-          {/* Image Upload Section */}
           <div className="space-y-4 mb-8">
             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
               <Camera className="h-5 w-5 text-blue-500" />
