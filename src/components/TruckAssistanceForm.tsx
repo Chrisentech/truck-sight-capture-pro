@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { MapPin, Truck, AlertTriangle, User, Camera } from 'lucide-react';
+import { MapPin, Truck, AlertTriangle, User, Camera, Navigation } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,16 +57,20 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
   const [phone, setPhone] = useState(cli_phone);
   const [truckIssue, setTruckIssue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const { toast } = useToast();
 
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
+      setIsLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const coords = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
           };
+          
+          console.log("Retrieved coordinates:", coords);
           
           try {
             const formattedAddress = await getFormattedAddress(coords.latitude, coords.longitude);
@@ -76,20 +80,30 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
               description: "Successfully retrieved your location and address details.",
             });
           } catch (error) {
+            console.error("Error getting formatted address:", error);
             setLocation(coords);
             toast({
               title: "Address lookup failed",
               description: "Got your coordinates, but couldn't get detailed address.",
               variant: "destructive",
             });
+          } finally {
+            setIsLoadingLocation(false);
           }
         },
         (error) => {
+          console.error("Geolocation error:", error);
+          setIsLoadingLocation(false);
           toast({
             title: "Location error",
-            description: "Please enable location access to receive assistance at your location.",
+            description: `Please enable location access to receive assistance at your location. Error: ${error.message}`,
             variant: "destructive",
           });
+        },
+        {
+          enableHighAccuracy: true, // Request high accuracy for better results
+          timeout: 10000, // 10 seconds timeout
+          maximumAge: 0 // Don't use cached position
         }
       );
     }
@@ -151,7 +165,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   required
-                  readOnly={false}
                 />
               </div>
               <div>
@@ -175,7 +188,6 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="(555) 123-4567"
                   required
-                  readOnly={false}
                 />
               </div>
             </div>
@@ -183,7 +195,7 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
 
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-4">
-              <MapPin className="h-5 w-5 text-red-500" />
+              <Navigation className="h-5 w-5 text-red-500" />
               Your Location
             </h3>
             <div className="space-y-4">
@@ -192,9 +204,19 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                 onClick={handleGetLocation}
                 className="w-full flex items-center justify-center gap-2"
                 variant="outline"
+                disabled={isLoadingLocation}
               >
-                <MapPin className="h-4 w-4" />
-                Get My Location
+                {isLoadingLocation ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></div>
+                    Getting Location...
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="h-4 w-4" />
+                    Get My Location
+                  </>
+                )}
               </Button>
               {location && (
                 <div className="bg-gray-100 p-4 rounded-lg space-y-2">
@@ -204,6 +226,9 @@ const TruckAssistanceForm: React.FC<TruckAssistanceFormProps> = (props) => {
                       <p>{location.formattedAddress.street}</p>
                       <p>
                         {location.formattedAddress.city}, {location.formattedAddress.state} {location.formattedAddress.zipcode}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Coordinates: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                       </p>
                     </>
                   ) : (
